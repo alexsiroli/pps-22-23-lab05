@@ -59,16 +59,26 @@ enum List[A]:
   def reverse(): List[A] = foldLeft[List[A]](Nil())((l, e) => e :: l)
 
   /** EXERCISES */
-  def zipRight: List[(A, Int)] = ???
+  def zipRight: List[(A, Int)] =
+    foldRight((List.Nil[(A, Int)](), length-1)) {
+      case (element, (list, counter)) => ((element, counter) :: list, counter -1)
+    }._1
 
-  def partition(pred: A => Boolean): (List[A], List[A]) = ???
+  def partition(pred: A => Boolean): (List[A], List[A]) = (this.filter(pred), this.filter(!pred(_)))
 
-  def span(pred: A => Boolean): (List[A], List[A]) = ???
+  def span(pred: A => Boolean): (List[A], List[A]) = this match
+    case h :: t if pred(h) => (h :: t.span(pred)._1, t.span(pred)._2)
+    case _ => (Nil(), this)
 
   /** @throws UnsupportedOperationException if the list is empty */
-  def reduce(op: (A, A) => A): A = ???
+  def reduce(op: (A, A) => A): A = this match
+    case Nil() => throw new UnsupportedOperationException()
+    case h :: t => t.foldLeft(h)(op)
 
-  def takeRight(n: Int): List[A] = ???
+  def takeRight(n: Int): List[A] = (this, n) match
+    case (Nil(), _) => Nil()
+    case (h :: t, n) if t.length < n => h:: t
+    case (_ :: t, n) => t.takeRight(n)
 
 // Factories
 object List:
